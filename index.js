@@ -9,76 +9,64 @@
  for you to use if you need it!
  */
 
-let allWagesFor = function () {
-    let eligibleDates = this.timeInEvents.map(function (e) {
-        return e.date
+let createEmployeeRecord = (arr) => {
+    let employee = {
+        firstName: arr[0],
+        familyName: arr[1],
+        title: arr[2],
+        payPerHour: arr[3],
+        timeInEvents: [],
+        timeOutEvents: []
+    };
+    return employee;
+}
+
+let createEmployeeRecords = (arr) => {
+    return arr.map(function(employee) {
+        return createEmployeeRecord(employee);
     })
-
-    let payable = eligibleDates.reduce(function (memo, d) {
-        return memo + wagesEarnedOnDate.call(this, d)
-    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
-
-    return payable
 }
 
-function createEmployeeRecord(empArr) {
-  
-  const newEmp = {
-    firstName: empArr[0],
-    familyName: empArr[1],
-    title: empArr[2],
-    payPerHour: empArr[3],
-    timeInEvents: [],
-    timeOutEvents: []
-  }
-  
-  return newEmp;
-}
-
-function createTimeInEvent(dateStamp) {
-  const [date, time] = dateStamp.split(" ");
-  const timeIn = {
-    type: "TimeIn",
-    hour: parseInt(time),
-    date,
-  }
-
-  return this;
-}
-
-function createTimeOutEvent(dateStamp) {
-  const [date, time] = dateStamp.split(" ");
-  const timeOut = {
-    type: "timeOut",
-    hour: parseInt(time),
-    date,
-  }
+let createTimeInEvent = function(dateStamp) {
+    let newEvent = {
+        type: "TimeIn",
+        date: dateStamp.split(' ')[0],
+        hour: parseInt(dateStamp.split(' ')[1])
+    };
+    this.timeInEvents.push(newEvent);
     return this;
 }
 
-function hoursWorkedOnDate(dateStamp){
-  const foundTimeOut = this.timeOutEvents.find(out => out.date == dateStamp);
-  const foundTimeIn = this.timeInEvents.find(out => out.date == dateStamp);
-  const workedHours = (foundTimeOut.hour - foundTimeIn.hour)/100;
-  return workedHours;
+let createTimeOutEvent = function(dateStamp) {
+    let newEvent = {
+        type: "TimeOut",
+        date: dateStamp.split(' ')[0],
+        hour: parseInt(dateStamp.split(' ')[1])
+    };
+    this.timeOutEvents.push(newEvent);
+    return this;
 }
 
-function wagesEarnedOnDate(date){
-  return 54;
+const hoursWorkedOnDate = function(date) {
+    let timeInEvent = this.timeInEvents.find(e => e.date === date)
+    let hourIn = timeInEvent.hour
+    let timeOutEvent = this.timeOutEvents.find(e => e.date === date)
+    let hourOut = timeOutEvent.hour
+    return parseInt((hourOut - hourIn)/100);
 }
 
-function findEmployeeByFirstName(srcArray, firstName){
-  return srcArray.find(employeeRecord => {
-    if(employeeRecord.firstName == firstName) return true;
-  })
+const wagesEarnedOnDate = function(date) {
+    return parseInt(hoursWorkedOnDate.call(this, date) * this.payPerHour);
 }
 
-function calculatePayroll(array){
-  let sumOfPay = 0;
-  array.forEach(employeeRecord => {
-    sumOfPay += allWagesFor(employeeRecord);
-  })
-  return sumOfPay;
+const findEmployeeByFirstName = (srcArray, firstName) => {
+    return srcArray.find(employee => employee.firstName === firstName);
+}
+
+let calculatePayroll = function(arrayOfEmployeeRecords){
+    return arrayOfEmployeeRecords.reduce(function(memo, rec){
+        return memo + allWagesFor.call(rec)
+    }, 0)
 }
 
 
